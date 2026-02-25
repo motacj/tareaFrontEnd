@@ -1,84 +1,232 @@
-// Importamos la librería principal de React.
 import React from 'react';
-// Importamos la función que creamos en nuestro servicio para obtener datos.
-import { getAsignaturas } from '../services/apirest';
-// 'class Personas extends React.Component' define el componente principal.
-class Asignaturas extends React.Component {
+import { 
+    getAsignaturas, 
+    deleteAsignatura, 
+    postAsignatura, 
+    putAsignatura 
+} from '../services/apirestAsignaturas.js';
 
-    // El constructor se ejecuta al crear una instancia del componente.
+class Asignaturas extends React.Component {
+    
     constructor(props) {
         super(props);
-        // 'this.state' almacena los datos que el componente necesita para renderizarse.
         this.state = {
-            asignaturas: [], // Array vacío para almacenar la lista de asignaturas.
-            isLoading: true, // Indica que estamos esperando la respuesta de la API.
-            error: null, // Almacena un mensaje de error si la petición falla.
+            asignaturas: [],
+            isLoading: true,
+            error: null,
+            showInsertForm: false,
+            isEditing: false,
+            asignaturaToEdit: null,
+            newAsignatura: { 
+                id_asignatura: 0,
+                id_profesor: 0,
+                nombre_asignatura: '',
+                horario: ''
+            }
         };
+        
+        this.handleDelete = this.handleDelete.bind(this);
+        this.handleToggleForm = this.handleToggleForm.bind(this);
+        this.handleInputChange = this.handleInputChange.bind(this);
+        this.handleInsert = this.handleInsert.bind(this);
+        this.fetchData = this.fetchData.bind(this);
+        this.handleStartEdit = this.handleStartEdit.bind(this);
+        this.handleEditInputChange = this.handleEditInputChange.bind(this);
+        this.handleUpdate = this.handleUpdate.bind(this);
     }
 
-    // 'componentDidMount' es un "hook" de React: se ejecuta JUSTO después de que el componente aparece en pantalla.
-    componentDidMount() {
-        // Llamamos a nuestra función de servicio.
+    fetchData() {
+        this.setState({ isLoading: true, error: null });
         getAsignaturas()
-            .then(data => {
-                // Si la promesa se resuelve (petición exitosa), actualizamos el estado.
-                this.setState({ 
-                    asignaturas: data, // Guardamos el array de asignaturas.
-                    isLoading: false // La carga ha terminado.
+            .then(data => this.setState({ asignaturas: data, isLoading: false }))
+            .catch(error => this.setState({ error: error.message, isLoading: false }));
+    }
+
+    componentDidMount() {
+        this.fetchData();
+    }
+
+    handleDelete(id) {
+        if (window.confirm(`¿Estás seguro de que quieres borrar la asignatura con ID ${id}?`)) {
+            deleteAsignatura(id)
+                .then(() => {
+                    this.fetchData();
+                })
+                .catch(error => {
+                    alert(`Fallo al borrar la asignatura: ${error.message}`);
                 });
+        }
+    }
+
+    handleToggleForm() {
+        this.setState(prevState => ({
+            showInsertForm: !prevState.showInsertForm,
+            newAsignatura: { 
+                id_asignatura: 0,
+                id_profesor: 0,
+                nombre_asignatura: '',
+                horario: ''
+            }
+        }));
+    }
+
+    handleInputChange(event) {
+        const { name, value } = event.target;
+        this.setState(prevState => ({
+            newAsignatura: {
+                ...prevState.newAsignatura,
+                [name]: name.includes("id") ? (parseInt(value) || 0) : value
+            }
+        }));
+    }
+
+    handleInsert(event) {
+        event.preventDefault();
+        
+        const { id_profesor, nombre_asignatura, horario } = this.state.newAsignatura;
+        if (!id_profesor || !nombre_asignatura || !horario) {
+            alert('Por favor, completa todos los campos.');
+            return;
+        }
+
+        postAsignatura(this.state.newAsignatura)
+            .then(() => {
+                alert('Asignatura insertada con éxito!');
+                this.handleToggleForm();
+                this.fetchData();
             })
             .catch(error => {
-                // Si la promesa es rechazada (hubo un error), actualizamos el estado con el error.
-                console.error("Fallo al obtener la lista de asignaturas:", error);
-                this.setState({ 
-                    error: error.message, // Guardamos el mensaje de error para mostrar.
-                    isLoading: false // La carga ha terminado (con error).
-                });
+                alert(`Error al insertar: ${error.message}`);
             });
     }
 
-    // El método 'render' se llama cada vez que el estado o las props cambian, devolviendo el HTML a mostrar.
-    render() {
-        // Desestructuramos el estado para usar las variables fácilmente.
-        const { asignaturas, isLoading, error } = this.state;
+    handleStartEdit(asignatura) {
+        this.setState({
+            isEditing: true,
+            asignaturaToEdit: { ...asignatura },
+            showInsertForm: false
+        });
+    }
+
+    handleEditInputChange(event) {
+        const { name, value } = event.target;
+        this.setState(prevState => ({
+            asignaturaToEdit: {
+                ...prevState.asignaturaToEdit,
+                [name]: name.includes("id") ? (parseInt(value) || 0) : value
+            }
+        }));
+    }
+
+    handleUpdate(event) {
+        event.preventDefault();
         
-        // 1. Mostrar Error si existe
+        const { id_profesor, nombre_asignatura, horario } = this.state.asignaturaToEdit;
+        if (!id_profesor || !nombre_asignatura || !horario) {
+            alert('Por favor, completa todos los campos.');
+            return;
+        }
+
+        putAsignatura(this.state.asignaturaToEdit)
+            .then(() => {
+                alert(`Asignatura actualizada con éxito!`);
+                this.setState({ isEditing: false, asignaturaToEdit: null });
+                this.fetchData();
+            })
+            .catch(error => {
+                alert(`Error al actualizar: ${error.message}`);
+            });
+    }
+
+    render() {
+        const { asignaturas, isLoading, error, showInsertForm, newAsignatura, isEditing, asignaturaToEdit } = this.state;
+        
         if (error) {
-            return <div>Error al cargar los datos: **{error}**. Por favor, revisa la consola para más detalles.</div>;
+             return <div>Error al cargar los datos: {error}</div>;
         }
 
-        // 2. Mostrar estado de Carga
         if (isLoading) {
-            return <div>Cargando listado de asignaturas...</div>;
+             return <div>Cargando listado de asignaturas...</div>;
         }
 
-        // 3. Renderizar el contenido final (Tabla)
         return (
             <div> 
                 <h2>Lista de Asignaturas</h2>
-                {/* Comprobamos si el array está vacío */}
+                
+                <button 
+                    onClick={this.handleToggleForm}
+                    style={{ padding: '10px', margin: '10px', backgroundColor: showInsertForm ? '#ffc107' : '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+                    disabled={isEditing}
+                >
+                    {showInsertForm ? 'Cancelar' : 'Insertar Nueva Asignatura'}
+                </button>
+
+                {showInsertForm && (
+                   <form onSubmit={this.handleInsert} style={{ border: '1px solid #ccc', padding: '20px', margin: '20px auto', width: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                         <h3>Insertar Asignatura</h3>
+                        
+                         <input type="number" name="id_profesor" placeholder="ID Profesor" value={newAsignatura.id_profesor} onChange={this.handleInputChange} required style={{ margin: '5px 0', padding: '8px', width: '100%' }} />
+                         <input type="text" name="nombre_asignatura" placeholder="Nombre Asignatura" value={newAsignatura.nombre_asignatura} onChange={this.handleInputChange} required style={{ margin: '5px 0', padding: '8px', width: '100%' }} />
+                         <input type="text" name="horario" placeholder="Horario" value={newAsignatura.horario} onChange={this.handleInputChange} required style={{ margin: '5px 0', padding: '8px', width: '100%' }} />
+                        
+                         <button type="submit" style={{ padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px', marginTop: '10px' }}>
+                             Guardar Asignatura
+                         </button>
+                    </form>
+                )}
+
+                {isEditing && asignaturaToEdit && (
+                    <form onSubmit={this.handleUpdate} style={{ border: '2px solid #ff9800', padding: '20px', margin: '20px auto', width: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <h3>Editando ID: {asignaturaToEdit.id_asignatura}</h3>
+                        
+                        <input type="number" name="id_profesor" value={asignaturaToEdit.id_profesor} onChange={this.handleEditInputChange} required style={{ margin: '5px 0', padding: '8px', width: '100%' }} />
+                        <input type="text" name="nombre_asignatura" value={asignaturaToEdit.nombre_asignatura} onChange={this.handleEditInputChange} required style={{ margin: '5px 0', padding: '8px', width: '100%' }} />
+                        <input type="text" name="horario" value={asignaturaToEdit.horario} onChange={this.handleEditInputChange} required style={{ margin: '5px 0', padding: '8px', width: '100%' }} />
+                        
+                        <button type="submit" style={{ padding: '10px', backgroundColor: '#ff9800', color: 'white', border: 'none', borderRadius: '5px', marginTop: '10px' }}>
+                            Actualizar Asignatura
+                        </button>
+                        <button type="button" onClick={() => this.setState({ isEditing: false, asignaturaToEdit: null })} style={{ padding: '10px', backgroundColor: '#ccc', marginTop: '5px' }}>
+                            Cancelar Edición
+                        </button>
+                    </form>
+                )}
+                
                 {asignaturas.length === 0 ? (
                     <p>No se encontraron asignaturas en la base de datos.</p>
                 ) : (
-                    // Si hay datos, dibujamos la tabla.
                     <table border="1" style={{ width: '80%', borderCollapse: 'collapse', margin: '20px auto' }}>
                         <thead>
                             <tr style={{ backgroundColor: '#f2f2f2' }}>
                                 <th>ID Profesor</th>
                                 <th>ID Asignatura</th>
-                                <th>Asignatura</th>
+                                <th>Nombre</th>
                                 <th>Horario</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {/* Asumiendo que el array se llama 'asignaturas' y el elemento es 'asignatura' */}
                             {asignaturas.map(asignatura => (
-                                // Usamos la clave compuesta
                                 <tr key={asignatura.id_asignatura}> 
                                     <td>{asignatura.id_profesor}</td> 
                                     <td>{asignatura.id_asignatura}</td> 
-                                    <td>{asignatura.nombre_asignatura}</td> {/* Coincide con el encabezado 'Nombre Asignatura' */}
-                                    <td>{asignatura.horario}</td>
+                                    <td>{asignatura.nombre_asignatura}</td>
+                                    <td>{asignatura.horario}</td> 
+                                    <td>
+                                        <button 
+                                            onClick={() => this.handleDelete(asignatura.id_asignatura)}
+                                            style={{ padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px' }}
+                                        >
+                                            Borrar
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={() => this.handleStartEdit(asignatura)}
+                                            style={{ padding: '5px 10px', backgroundColor: '#ff9800', color: 'white', border: 'none', borderRadius: '5px', marginLeft: '5px' }}
+                                        >
+                                            Editar
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -89,5 +237,4 @@ class Asignaturas extends React.Component {
     }
 }
 
-// 'export default' hace que este componente esté disponible para ser usado en 'App.js'.
 export default Asignaturas;

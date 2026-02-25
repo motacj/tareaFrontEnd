@@ -1,6 +1,6 @@
 import React from 'react';
 // Importamos las funciones CRUD de la API
-import { getPersonas, deletePersona, postPersona, putPersona } from '../services/apirest'; 
+import { getPersonas, deletePersona, postPersona, putPersona } from '../services/apirestPersonas.js'; 
 
 class Personas extends React.Component {
     

@@ -1,29 +1,33 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Home() {
-    // Puedes usar estilos en línea o importar un archivo CSS
+
+    const navigate = useNavigate();
+
+    const logout = () => {
+        localStorage.removeItem("jwt");
+        navigate("/");
+    };
+
     const buttonStyle = {
         padding: '10px 20px',
         margin: '10px 0',
         width: '200px',
         textDecoration: 'none',
         textAlign: 'center',
-        backgroundColor: '#007bff', // Color de botón
+        backgroundColor: '#007bff',
         color: 'white',
         borderRadius: '5px',
-        display: 'block' // Para que cada botón ocupe toda la columna (stacking)
+        display: 'block'
     };
 
     return (
         <div style={{ textAlign: 'center', marginTop: '50px' }}>
-            
-            {/* Logo */}
+
             <h1>Mi Académica</h1>
             <p>Sistema de Gestión de Alumnos y Cursos</p>
-            
 
-            {/* Contenedor de Botones en Columna */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '30px' }}>
                 
                 <Link to="/personas" style={buttonStyle}>
@@ -37,6 +41,13 @@ function Home() {
                 <Link to="/matriculas" style={buttonStyle}>
                     Ver Matrículas
                 </Link>
+
+                <button 
+                    onClick={logout}
+                    style={{ ...buttonStyle, backgroundColor: '#dc3545' }}
+                >
+                    Cerrar sesión
+                </button>
             </div>
         </div>
     );
