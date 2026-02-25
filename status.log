@@ -1,0 +1,18 @@
+× nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+     Active: failed (Result: exit-code) since Thu 2026-01-22 23:55:25 CET; 1min 24s ago
+       Docs: man:nginx(8)
+    Process: 6757 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+    Process: 6758 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+        CPU: 39ms
+
+ene 22 23:55:24 bodhivps-VirtualBox nginx[6758]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Unknown error)
+ene 22 23:55:24 bodhivps-VirtualBox nginx[6758]: nginx: [emerg] bind() to [::]:80 failed (98: Unknown error)
+ene 22 23:55:24 bodhivps-VirtualBox nginx[6758]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Unknown error)
+ene 22 23:55:24 bodhivps-VirtualBox nginx[6758]: nginx: [emerg] bind() to [::]:80 failed (98: Unknown error)
+ene 22 23:55:25 bodhivps-VirtualBox nginx[6758]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Unknown error)
+ene 22 23:55:25 bodhivps-VirtualBox nginx[6758]: nginx: [emerg] bind() to [::]:80 failed (98: Unknown error)
+ene 22 23:55:25 bodhivps-VirtualBox nginx[6758]: nginx: [emerg] still could not bind()
+ene 22 23:55:25 bodhivps-VirtualBox systemd[1]: nginx.service: Control process exited, code=exited, status=1/FAILURE
+ene 22 23:55:25 bodhivps-VirtualBox systemd[1]: nginx.service: Failed with result 'exit-code'.
+ene 22 23:55:25 bodhivps-VirtualBox systemd[1]: Failed to start A high performance web server and a reverse proxy server.

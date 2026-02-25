@@ -1,4 +1,4 @@
-// 🟢 Archivo: Matriculas.jsx (CORREGIDO)
+// Archivo: Matriculas.jsx (CORREGIDO)
 
 import React from 'react';
 // Importamos la función de Matriculas, no la de Asignaturas.

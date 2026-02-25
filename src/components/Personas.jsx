@@ -28,7 +28,7 @@ class Personas extends React.Component {
         this.handleInsert = this.handleInsert.bind(this);
         this.fetchData = this.fetchData.bind(this); // Método de utilidad para recargar
         
-        // 🔑 Enlaces de las nuevas funciones de EDICIÓN
+        // Enlaces de las nuevas funciones de EDICIÓN
         this.handleStartEdit = this.handleStartEdit.bind(this);      
         this.handleEditInputChange = this.handleEditInputChange.bind(this); 
         this.handleUpdate = this.handleUpdate.bind(this);
@@ -105,7 +105,7 @@ class Personas extends React.Component {
             });
     }
 
-    // 🔑 NUEVO: Inicia la edición y abre el formulario
+    // NUEVO: Inicia la edición y abre el formulario
     handleStartEdit(persona) {
         this.setState({
             isEditing: true,
